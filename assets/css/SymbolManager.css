@@ -1,0 +1,86 @@
+.symbol-manager {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Spacing between elements */
+  padding: 10px;
+  border-bottom: 1px solid #ccc; /* Separator */
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.symbol-manager label {
+  font-weight: bold;
+}
+
+.symbol-manager input[type="text"],
+.symbol-manager select,
+.symbol-manager button {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.symbol-manager input[type="checkbox"] {
+  /* Hide the default checkbox */
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute; /* Take it out of flow */
+  opacity: 0; /* Make it invisible */
+  width: 0;
+  height: 0;
+}
+
+.symbol-manager .favorite-label {
+  cursor: pointer;
+  font-size: 1.2em; /* Make the star bigger */
+  user-select: none; /* Prevent text selection */
+  display: inline-block; /* Needed for interaction */
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid transparent; /* Placeholder for focus */
+  transition: transform 0.2s ease;
+}
+.symbol-manager .favorite-label:hover {
+    transform: scale(1.1);
+}
+
+/* Style the label based on the checkbox state */
+.symbol-manager input[type="checkbox"]:checked + .favorite-label {
+  /* Could add a background or different color when checked */
+   filter: grayscale(0%); /* Full color when checked */
+   opacity: 1;
+}
+
+.symbol-manager input[type="checkbox"]:not(:checked) + .favorite-label {
+   filter: grayscale(100%); /* Grayscale when not checked */
+   opacity: 0.6;
+}
+
+
+/* Add focus style for accessibility */
+.symbol-manager input[type="checkbox"]:focus + .favorite-label {
+  outline: 2px solid blue; /* Or your preferred focus style */
+   border: 1px solid blue;
+}
+
+.symbol-manager input[type="checkbox"]:disabled + .favorite-label {
+  cursor: not-allowed;
+  opacity: 0.3;
+   filter: grayscale(100%);
+}
+
+
+.symbol-manager button {
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.symbol-manager button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.symbol-manager button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

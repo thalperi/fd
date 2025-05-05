@@ -1,0 +1,63 @@
+.kline-table-container {
+  padding: 10px;
+  /* height: 100%; Remove fixed height, let flexbox control it */
+  display: flex;
+  flex-direction: column;
+}
+
+.kline-table-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.loading, .error, .no-data {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.error {
+  color: red;
+}
+
+.table-wrapper {
+  flex-grow: 1; /* Allow table wrapper to take remaining space */
+  overflow-y: auto; /* Add scrollbar if content overflows */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.kline-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.kline-table-container th,
+.kline-table-container td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: right; /* Align numbers to the right */
+  font-size: 0.9em;
+  white-space: nowrap; /* Prevent wrapping */
+}
+.kline-table-container th:first-child,
+.kline-table-container td:first-child {
+    text-align: left; /* Align timestamp left */
+}
+
+
+.kline-table-container th {
+  background-color: #f2f2f2;
+  position: sticky; /* Make header sticky */
+  top: 0; /* Stick to the top of the scrollable container */
+  z-index: 1;
+}
+
+.kline-table-container tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.kline-table-container tr:hover {
+  background-color: #e9e9e9;
+}

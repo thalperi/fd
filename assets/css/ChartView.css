@@ -1,0 +1,21 @@
+.chart-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Fill the parent container height */
+  border-left: 1px solid #ccc; /* Separator for split view */
+  background-color: #fff;
+}
+
+.dynamic-chart-area {
+  flex-grow: 1; /* Allow chart area to take remaining vertical space */
+  padding: 10px;
+  overflow: hidden; /* Prevent content spillover, chart components should handle internal scroll/zoom */
+  position: relative; /* Needed for chart absolute positioning if any */
+  display: flex; /* Ensure child chart container fills space */
+  flex-direction: column;
+}
+
+/* Ensure the dynamically loaded chart container fills the area */
+.dynamic-chart-area > .chart-container {
+    flex-grow: 1;
+}

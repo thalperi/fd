@@ -1,0 +1,93 @@
+/* Basic Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #__nuxt {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Prevent body scroll */
+  font-family: sans-serif;
+  background-color: #f4f4f4;
+}
+
+.app-container {
+  display: grid; /* Use CSS Grid */
+  grid-template-rows: auto 1fr; /* Header takes auto height, main content takes remaining */
+  grid-template-columns: 100%; /* Single column layout */
+  height: 100vh; /* Full viewport height */
+  width: 100vw; /* Full viewport width */
+  grid-template-areas:
+    "header"
+    "main";
+}
+
+.controls-bar {
+  grid-area: header; /* Position header in grid */
+  display: flex;
+  flex-wrap: wrap; /* Allow controls to wrap */
+  gap: 15px; /* Space between control groups */
+  padding: 10px;
+  background-color: #e9ecef;
+  border-bottom: 1px solid #ced4da;
+  /* Make controls bar non-scrollable, fixed height */
+  flex-shrink: 0;
+}
+
+.main-content {
+  grid-area: main; /* Position main content in grid */
+  display: grid; /* Nested grid for left/right panels */
+  grid-template-columns: 35% 1fr; /* Left panel 35%, right panel takes remaining */
+  grid-template-areas: "left right";
+  overflow: hidden; /* Prevent main content from causing body scroll */
+}
+
+.left-panel {
+  grid-area: left; /* Position left panel in grid */
+  min-width: 300px; /* Minimum width for usability */
+  max-width: 500px; /* Maximum width */
+  display: flex;
+  flex-direction: column;
+  overflow: auto; /* Allow scrolling if content overflows */
+  background-color: #fff;
+  border-right: 1px solid #ced4da;
+}
+
+.right-panel {
+  grid-area: right; /* Position right panel in grid */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Contains the chart view */
+}
+
+/* Ensure components inside panels fill height if needed */
+.left-panel > .data-sources-view,
+.right-panel > .chart-view {
+    height: 100%;
+}
+
+/* Responsive adjustments (example) */
+@media (max-width: 768px) {
+  .main-content {
+    grid-template-columns: 1fr; /* Stack panels vertically */
+    grid-template-rows: 50% 50%;
+    grid-template-areas:
+      "left"
+      "right";
+  }
+  .left-panel, .right-panel {
+    width: 100%;
+    max-width: none;
+    height: 50%; /* Split height */
+    border-right: none;
+    border-bottom: 1px solid #ced4da; /* Separator when stacked */
+  }
+   .right-panel {
+     border-bottom: none;
+   }
+   .right-panel > .chart-view {
+     border-left: none; /* Remove side border when stacked */
+   }
+}

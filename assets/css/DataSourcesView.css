@@ -1,0 +1,29 @@
+.data-sources-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Fill parent height */
+  overflow: hidden; /* Prevent internal scroll */
+}
+
+.data-sources-view .data-table {
+  /* Define how tables share space */
+  flex-basis: 50%; /* Start by giving each table half the space */
+  min-height: 150px; /* Ensure tables don't collapse too much */
+  overflow: hidden; /* Each table container handles its own scroll */
+}
+
+.data-sources-view .kline-data {
+   /* Kline table takes priority or more space if needed */
+   flex-grow: 1;
+   /* border-bottom: 1px solid #ccc; */ /* Separator handled by trades table border-top */
+}
+
+.data-sources-view .trades-data {
+    flex-shrink: 1; /* Allow trades table to shrink if needed */
+    /* border-top is already defined in OpenTradesTable.css */
+}
+
+/* Adjust the height property within KlineTable.css and OpenTradesTable.css */
+/* Remove height: 100% from .kline-table-container */
+/* Remove height: 50% from .trades-table-container */
+/* The flex properties here will now control the height distribution */
