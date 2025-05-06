@@ -30,7 +30,15 @@ const klineStore = useKlineStore();
 const { currentSymbolOpenOrders: openOrders, selectedOrderId } = storeToRefs(klineStore);
 
 const chartCanvas = ref<HTMLCanvasElement | null>(null);
-let chartInstance: Chart | null = null; // Keep as let for reassignment
+import type { ChartConfiguration, ChartTypeRegistry } from 'chart.js';
+
+type CustomChartInstance = Chart<'candlestick', { x: number; o: number; h: number; l: number; c: number; }[], unknown> & {
+  options: ChartConfiguration<'candlestick'> & {
+    plugins: NonNullable<ChartConfiguration<'candlestick'>['options']['plugins']>;
+  };
+};
+
+let chartInstance: CustomChartInstance | null = null; // Keep as let for reassignment
 
 // Function to format data for Chart.js financial chart
 const formatChartData = (data: Kline[]) => {
@@ -71,9 +79,8 @@ const annotationOptions = computed(() => {
             value: parseFloat(order.price) // The price level for the line
         };
     });
-    return { annotations };
+    return annotations; // Return annotations directly instead of wrapping in an object
 });
-
 
 const renderOrUpdateChart = () => {
   if (!chartCanvas.value) return;
@@ -83,8 +90,10 @@ const renderOrUpdateChart = () => {
   if (chartInstance) {
     // Update existing chart
     chartInstance.data.datasets[0].data = formattedData;
+    chartInstance.options.plugins.annotation = annotationOptions.value; // Update annotations
     chartInstance.update();
     console.log('Chart.js updated with', formattedData.length, 'points');
+    console.log('Annotations updated:', annotationOptions.value);
   } else {
     // Create new chart instance
     const ctx = chartCanvas.value.getContext('2d');
@@ -96,12 +105,6 @@ const renderOrUpdateChart = () => {
         datasets: [{
           label: 'Candlestick',
           data: formattedData,
-          // borderColor: 'black', // Optional styling
-          // color: { // Optional styling for up/down candles
-          //   up: 'rgba(80, 160, 115, 1)',
-          //   down: 'rgba(215, 85, 65, 1)',
-          //   unchanged: 'rgba(90, 90, 90, 1)',
-          // }
         }]
       },
       options: {
@@ -136,7 +139,7 @@ const renderOrUpdateChart = () => {
             mode: 'index',
             intersect: false,
           },
-          // annotation: annotationOptions.value, // Remove computed annotations here
+          annotation: annotationOptions.value, // Set annotations here
           legend: {
             display: false // Hide legend for single dataset
           },
@@ -147,7 +150,14 @@ const renderOrUpdateChart = () => {
         }
       }
     });
+
+    // Ensure plugins is initialized
+    if (!chartInstance.options.plugins) {
+      chartInstance.options.plugins = {};
+    }
+
     console.log('Chart.js created with', formattedData.length, 'points');
+    console.log('Annotations set:', annotationOptions.value);
   }
 };
 
@@ -197,7 +207,12 @@ watch([openOrders, selectedOrderId], () => {
     if (chartInstance) {
         console.log("Orders or selected order changed, updating annotations...");
         try {
-            chartInstance.options.plugins = chartInstance.options.plugins || {};
+            if (!chartInstance.options.plugins) {
+                chartInstance.options.plugins = {};
+            }
+            if (!chartInstance.options.plugins.annotation) {
+                chartInstance.options.plugins.annotation = {};
+            }
             chartInstance.options.plugins.annotation = annotationOptions.value;
             chartInstance.update();
         } catch (e) {

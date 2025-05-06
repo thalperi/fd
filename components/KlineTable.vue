@@ -4,37 +4,42 @@
     <div v-if="isLoading" class="loading">Loading data...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="klines.length === 0" class="no-data">No data available.</div>
-    <div v-else class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>Open</th>
-            <th>High</th>
-            <th>Low</th>
-            <th>Close</th>
-            <th>Volume</th>
-            <!-- Add more columns if needed -->
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Iterate in reverse to show latest first -->
-          <tr v-for="kline in reversedKlines" :key="kline.timestamp">
-            <td>{{ formatTimestamp(kline.timestamp) }}</td>
-            <td>{{ kline.open }}</td>
-            <td>{{ kline.high }}</td>
-            <td>{{ kline.low }}</td>
-            <td>{{ kline.close }}</td>
-            <td>{{ kline.volume }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-else>
+      <button @click="toggleTable" class="toggle-button">
+        {{ isTableVisible ? 'Hide Kline Data' : 'Show Kline Data' }}
+      </button>
+      <div v-if="isTableVisible" class="table-wrapper" :style="{ maxHeight: isTableVisible ? 'none' : '400px' }">
+        <v-table>
+          <thead>
+            <tr>
+              <th class="text-left">Timestamp</th>
+              <th class="text-left">Open</th>
+              <th class="text-left">High</th>
+              <th class="text-left">Low</th>
+              <th class="text-left">Close</th>
+              <th class="text-left">Volume</th>
+              <!-- Add more columns if needed -->
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Iterate in reverse to show latest first -->
+            <tr v-for="kline in visibleKlines" :key="kline.timestamp">
+              <td>{{ formatTimestamp(kline.timestamp) }}</td>
+              <td>{{ kline.open }}</td>
+              <td>{{ kline.high }}</td>
+              <td>{{ kline.low }}</td>
+              <td>{{ kline.close }}</td>
+              <td>{{ kline.volume }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useKlineStore } from '~/stores/klineStore';
 import type { Kline } from '~/db'; // Import the Kline type for type safety if needed
@@ -71,6 +76,19 @@ const formatTimestamp = (timestamp: number): string => {
   }
 };
 
-// No local state or watchers needed, data comes directly from the store via storeToRefs
+// State to control table visibility
+const isTableVisible = ref(true);
 
+// Method to toggle table visibility
+const toggleTable = () => {
+  isTableVisible.value = !isTableVisible.value;
+};
+
+// Computed property to limit visible klines to 20
+const visibleKlines = computed(() => {
+  return reversedKlines.value.slice(0, 20);
+});
 </script>
+<style scoped>
+@import '../assets/css/KlineTable.css';
+</style>

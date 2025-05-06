@@ -9,7 +9,7 @@ type ApiRawKline = [
 ];
 
 // Define the structure for the open order data from our API (matching backend)
-interface OpenOrder {
+export interface OpenOrder {
   symbol: string;
   orderId: number;
   price: string;

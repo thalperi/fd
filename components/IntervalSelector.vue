@@ -35,3 +35,6 @@ const selectInterval = (interval: string) => {
 // No need for local state or watchers, store handles it
 
 </script>
+<style scoped>
+@import '../assets/css/IntervalSelector.css';
+</style>

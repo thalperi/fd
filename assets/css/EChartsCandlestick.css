@@ -1,0 +1,111 @@
+/* Placeholder styles for EChartsCandlestick.vue */
+.chart-container.echarts-candlestick {
+  /* Add any specific styles for ECharts candlestick chart here */
+  width: 100%;
+  height: 400px;
+  position: relative;
+}
+
+.echarts-candlestick .chart-render-target {
+  width: 100%;
+  height: 100%;
+}
+
+.echarts-candlestick .chart-render-target canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip:before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.7) transparent transparent transparent;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip:after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 4px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip .tooltip-item {
+  padding: 4px 0;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip .tooltip-item.color-box {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip .tooltip-item.label {
+  font-weight: bold;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip .tooltip-item.value {
+  color: #999;
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip .tooltip-item.value.up {
+  color: rgba(80, 160, 115, 1);
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip .tooltip-item.value.down {
+  color: rgba(215, 85, 65, 1);
+}
+
+.echarts-candlestick .chart-render-target .echarts-tooltip .tooltip-item.value.unchanged {
+  color: rgba(90, 90, 90, 1);
+}
+
+/* Candlestick chart specific styles */
+:root {
+  --candle-up-color: #00B746; /* Up color (green) */
+  --candle-down-color: #EF403C; /* Down color (red) */
+}
+
+.echarts-candlestick .chart-render-target .mark-line-label {
+  background-color: var(--candle-up-color);
+  color: white;
+  padding: 2px 5px;
+  border-radius: 4px;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.echarts-candlestick .chart-render-target .mark-line-label.buy {
+  background-color: var(--candle-up-color);
+}
+
+.echarts-candlestick .chart-render-target .mark-line-label.sell {
+  background-color: var(--candle-down-color);
+}
+
+.echarts-candlestick .chart-render-target .mark-line-label.selected {
+  font-weight: bold;
+  border-width: 3px;
+}
+
+.echarts-candlestick .chart-render-target .mark-line-label.unselected {
+  border-width: 1.5px;
+  border-style: dashed;
+}

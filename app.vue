@@ -1,53 +1,80 @@
 <template>
-  <div class="app-container">
-    <header class="controls-bar">
-      <!-- Symbol Manager and Interval Selector go here -->
-      <SymbolManager />
-      <IntervalSelector />
-    </header>
-
-    <main class="main-content">
-      <aside class="left-panel">
-        <!-- Data Sources View (Kline + Trades) goes here -->
-        <DataSourcesView />
-      </aside>
-      <section class="right-panel">
-        <!-- Chart View (which includes type selector and dynamic chart) goes here -->
-        <ChartView />
-      </section>
-    </main>
-  </div>
+  <v-app class="app">
+    <v-main class="main">
+      <v-container fluid class="container">
+        <div class="app-layout">
+          <div class="toolbar-grid">
+            <SymbolManager class="symbol-manager" />
+            <IntervalSelector class="interval-selector" />
+          </div>
+          <div class="content">
+            <div class="content-section">
+              <ChartView />
+            </div>
+            <div class="content-section-peer">
+              <OpenTradesTable />
+            </div>
+            <div class="content-section-peer">
+              <KlineTable />
+            </div>
+          </div>
+        </div>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup lang="ts">
-// Import components needed for the layout
-import SymbolManager from '~/components/SymbolManager.vue';
-import IntervalSelector from '~/components/IntervalSelector.vue';
-import DataSourcesView from '~/components/DataSourcesView.vue'; // Import the new wrapper
-import ChartView from '~/components/ChartView.vue';
-import { useKlineStore } from '~/stores/klineStore'; // Import the Pinia store
-import { onMounted } from 'vue';
+import SymbolManager from '~/components/SymbolManager.vue'
+import IntervalSelector from '~/components/IntervalSelector.vue'
+import DataSourcesView from '~/components/DataSourcesView.vue'
+import ChartView from '~/components/ChartView.vue'
+import { useKlineStore } from '~/stores/klineStore'
+import { onMounted } from 'vue'
 
-// Import global CSS - Nuxt 3 uses nuxt.config.ts for this primarily,
-// but we can also import directly here if needed, though config is preferred.
+const klineStore = useKlineStore()
 
-// Import global CSS - Nuxt 3 uses nuxt.config.ts for this primarily,
-// but we can also import directly here if needed, though config is preferred.
-
-// Get the store instance
-const klineStore = useKlineStore();
-
-// Initialize the store when the app mounts
-// This will load favorites and trigger the initial data fetch
 onMounted(() => {
-  // Ensure Dexie DB initialization runs client-side before store init
-  // The check is already in db/index.ts, but good to be mindful
   if (process.client) {
-      klineStore.initializeStore();
+    klineStore.initializeStore()
   }
-});
-
+})
 </script>
 
-<!-- No <style> block needed here, global styles are in CSS files -->
-<!-- We will configure Nuxt to load these CSS files globally -->
+<style scoped>
+.app {
+  background-color: #007bff;
+}
+
+.main {
+  background-color: #28a745;
+}
+
+.main-peer {
+  background-color: #218838; /* Slightly darker green */
+}
+
+.container {
+  background-color: #dc3545;
+}
+
+.container-peer {
+  background-color: #c82333; /* Slightly darker red */
+}
+
+.toolbar {
+  background-color: #ffc107;
+}
+
+.toolbar-peer {
+  background-color: #e0a800; /* Slightly darker yellow */
+}
+
+.content-section {
+  background-color: #e9ecef; /* Light gray for peer components */
+}
+
+.content-section-peer {
+  background-color: #dee2e6; /* Slightly darker gray */
+}
+</style>

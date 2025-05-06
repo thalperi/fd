@@ -98,3 +98,6 @@ const confirmSymbol = () => {
 // });
 
 </script>
+<style scoped>
+@import '../assets/css/SymbolManager.css';
+</style>

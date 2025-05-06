@@ -139,16 +139,16 @@ const setChartOptions = () => {
                 name: 'Candlestick',
                 type: 'candlestick',
                 data: values,
-                itemStyle: { // Define colors for up/down candles
-                    color: '#00B746', // Up color (green)
-                    color0: '#EF403C', // Down color (red)
-                    borderColor: '#00B746',
-                    borderColor0: '#EF403C'
+                itemStyle: {
+                    color: 'var(--candle-up-color)',
+                    color0: 'var(--candle-down-color)',
+                    borderColor: 'var(--candle-up-color)',
+                    borderColor0: 'var(--candle-down-color)'
                 },
-                markLine: { // Add mark lines for open orders
+                markLine: {
                     data: computedMarkLines.value,
-                    symbol: 'none', // Hide the default symbol
-                    animation: false // Disable animation for smoother updates
+                    symbol: 'none',
+                    animation: false
                 }
                 // Optional: Mark points/lines, moving averages etc.
             }

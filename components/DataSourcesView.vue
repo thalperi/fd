@@ -14,5 +14,8 @@ import OpenTradesTable from './OpenTradesTable.vue';
 
 // No specific script logic needed here for now, just layout
 </script>
+<style scoped>
+@import '../assets/css/DataSourcesView.css';
+</style>
 
 <!-- Styles moved to assets/css/DataSourcesView.css -->

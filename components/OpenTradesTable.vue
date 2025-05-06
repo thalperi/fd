@@ -5,15 +5,15 @@
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else-if="trades.length === 0" class="no-data">No open trades.</div>
     <div v-else class="table-wrapper">
-      <table>
+      <v-table>
         <thead>
           <tr>
-            <th>Order ID</th>
-            <th>Symbol</th>
-            <th>Side</th>
-            <th>Price</th>
-            <th>Amount</th>
-            <th>Time</th>
+            <th class="text-left">Order ID</th>
+            <th class="text-left">Symbol</th>
+            <th class="text-left">Side</th>
+            <th class="text-left">Price</th>
+            <th class="text-left">Amount</th>
+            <th class="text-left">Time</th>
           </tr>
         </thead>
         <tbody>
@@ -32,7 +32,7 @@
             <td>{{ formatTimestamp(trade.time) }}</td>
           </tr>
         </tbody>
-      </table>
+      </v-table>
     </div>
   </div>
 </template>
@@ -41,7 +41,7 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useKlineStore } from '~/stores/klineStore';
-import type { OpenOrder } from '~/stores/klineStore'; // Assuming OpenOrder is exported from store, otherwise define locally or use any
+import type { OpenOrder } from '~/stores/klineStore'; // Import OpenOrder type from store
 
 const klineStore = useKlineStore();
 // Get reactive refs from store
@@ -54,7 +54,7 @@ const {
 } = storeToRefs(klineStore);
 
 // Function to handle trade selection
-const selectTrade = (trade: OpenOrder) => { // Use 'any' or import OpenOrder type
+const selectTrade = (trade: OpenOrder) => {
   console.log('Selected Trade:', trade);
   // Call store action to set the globally selected trade ID
   klineStore.setSelectedOrder(trade.orderId);
@@ -71,4 +71,6 @@ const formatTimestamp = (timestamp: number): string => {
 };
 </script>
 
-<!-- Styles moved to assets/css/OpenTradesTable.css -->
+<style scoped>
+@import '../assets/css/OpenTradesTable.css';
+</style>

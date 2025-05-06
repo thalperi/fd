@@ -1,20 +1,18 @@
 export default defineNuxtConfig({
   css: [
-    '@primevue/themes/lara/theme.css',
-    'primevue/resources/primevue.css',
-    'primeicons/primeicons.css',
-    'primeflex/primeflex.css'
+    'vuetify/styles',
+    '@mdi/font/css/materialdesignicons.min.css',
+    '~/assets/css/global.css',
   ],
-
   build: {
-    transpile: ['primevue']
+    transpile: ['vuetify']
   },
-
   vite: {
+    css: {},
     esbuild: {
       format: 'esm'
     }
   },
-
+  plugins: ['~/plugins/vuetify.ts'],
   compatibilityDate: '2025-04-28'
 })

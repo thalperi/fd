@@ -1,17 +1,21 @@
 <template>
   <div class="chart-view">
-    <TabView v-model:activeIndex="activeIndex">
-      <TabPanel header="Chart.js">
-        <ChartJsCandlestick :klines="klines" :isLoading="isLoading" :error="error" />
-      </TabPanel>
-      <!-- Remove TradingView and ECharts -->
-      <!-- <TabPanel header="TradingView LW">
-        <TradingViewLightweightChart :klines="klines" :isLoading="isLoading" :error="error" />
-      </TabPanel>
-      <TabPanel header="ECharts">
+    <v-tabs v-model="activeIndex" grow>
+      <v-tab value="0">Chart.js</v-tab>
+      <v-tab value="1">ECharts</v-tab>
+      <v-tab value="2">TradingView</v-tab>
+    </v-tabs>
+    <v-window v-model="activeIndex">
+<v-window-item value="0" class="full-width">
+  <ChartJsCandlestick :klines="klines" :isLoading="isLoading" :error="error" />
+</v-window-item>
+      <v-window-item value="1">
         <EChartsCandlestick :klines="klines" :isLoading="isLoading" :error="error" />
-      </TabPanel> -->
-    </TabView>
+      </v-window-item>
+      <v-window-item value="2">
+        <TradingViewChart :klines="klines" :isLoading="isLoading" :error="error" />
+      </v-window-item>
+    </v-window>
   </div>
 </template>
 
@@ -20,8 +24,8 @@ import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useKlineStore } from '~/stores/klineStore';
 import ChartJsCandlestick from './charts/ChartJsCandlestick.vue';
-import TradingViewLightweightChart from './charts/TradingViewLightweightChart.vue';
 import EChartsCandlestick from './charts/EChartsCandlestick.vue';
+import TradingViewChart from './charts/TradingViewChart.vue';
 
 const klineStore = useKlineStore();
 
@@ -34,22 +38,22 @@ const {
 } = storeToRefs(klineStore);
 
 // Use a ref to track the active tab index
-const activeIndex = ref(0);
+const activeIndex = ref('0');
 
 // Watch for changes in selectedChartType and update the active tab
 watch(selectedChartType, (newType) => {
   switch (newType) {
     case 'ChartJsCandlestick':
-      activeIndex.value = 0;
-      break;
-    case 'TradingViewLightweightChart':
-      activeIndex.value = 1;
+      activeIndex.value = '0';
       break;
     case 'EChartsCandlestick':
-      activeIndex.value = 2;
+      activeIndex.value = '1';
+      break;
+    case 'TradingViewChart':
+      activeIndex.value = '2';
       break;
     default:
-      activeIndex.value = 0; // Default to Chart.js
+      activeIndex.value = '0'; // Default to Chart.js
   }
 });
 
@@ -58,16 +62,16 @@ watch(selectedChartType, (newType) => {
 const initializeActiveIndex = () => {
   switch (selectedChartType.value) {
     case 'ChartJsCandlestick':
-      activeIndex.value = 0;
-      break;
-    case 'TradingViewLightweightChart':
-      activeIndex.value = 1;
+      activeIndex.value = '0';
       break;
     case 'EChartsCandlestick':
-      activeIndex.value = 2;
+      activeIndex.value = '1';
+      break;
+    case 'TradingViewChart':
+      activeIndex.value = '2';
       break;
     default:
-      activeIndex.value = 0; // Default to Chart.js
+      activeIndex.value = '0'; // Default to Chart.js
   }
 };
 
@@ -77,20 +81,6 @@ onMounted(() => {
 });
 
 </script>
-
 <style scoped>
-/* Styles will be moved to assets/css/ChartView.css */
-.chart-view {
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* Fill the parent container height */
-  border-left: 1px solid #ccc; /* Separator for split view */
-  background-color: #fff;
-}
-
-/* Ensure the dynamically loaded chart container fills the area */
-/* .dynamic-chart-area > .chart-container {
-    flex-grow: 1;
-} */
-
+@import '../assets/css/ChartView.css';
 </style>
