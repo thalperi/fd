@@ -1,14 +1,15 @@
 <template>
-  <div class="chart-view">
+  <!-- Remove the outer div, container styling is handled by parent -->
+  <!-- <div class="chart-view"> --> 
     <v-tabs v-model="activeIndex" grow>
       <v-tab value="0">Chart.js</v-tab>
       <v-tab value="1">ECharts</v-tab>
       <v-tab value="2">TradingView</v-tab>
     </v-tabs>
     <v-window v-model="activeIndex">
-<v-window-item value="0" class="full-width">
-  <ChartJsCandlestick :klines="klines" :isLoading="isLoading" :error="error" />
-</v-window-item>
+      <v-window-item value="0"> <!-- Removed class="full-width" -->
+        <ChartJsCandlestick :klines="klines" :isLoading="isLoading" :error="error" />
+      </v-window-item>
       <v-window-item value="1">
         <EChartsCandlestick :klines="klines" :isLoading="isLoading" :error="error" />
       </v-window-item>
@@ -16,11 +17,11 @@
         <TradingViewChart :klines="klines" :isLoading="isLoading" :error="error" />
       </v-window-item>
     </v-window>
-  </div>
+  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue'; // Added onMounted import
 import { storeToRefs } from 'pinia';
 import { useKlineStore } from '~/stores/klineStore';
 import ChartJsCandlestick from './charts/ChartJsCandlestick.vue';
@@ -38,7 +39,7 @@ const {
 } = storeToRefs(klineStore);
 
 // Use a ref to track the active tab index
-const activeIndex = ref('0');
+const activeIndex = ref('0'); // Keep as string to match v-tab value
 
 // Watch for changes in selectedChartType and update the active tab
 watch(selectedChartType, (newType) => {
@@ -55,32 +56,20 @@ watch(selectedChartType, (newType) => {
     default:
       activeIndex.value = '0'; // Default to Chart.js
   }
-});
+}, { immediate: true }); // Run immediately to sync on load
 
-// Initialize the active tab based on the store's selectedChartType
-// This ensures the correct tab is selected on initial load/reload
-const initializeActiveIndex = () => {
-  switch (selectedChartType.value) {
-    case 'ChartJsCandlestick':
-      activeIndex.value = '0';
-      break;
-    case 'EChartsCandlestick':
-      activeIndex.value = '1';
-      break;
-    case 'TradingViewChart':
-      activeIndex.value = '2';
-      break;
-    default:
-      activeIndex.value = '0'; // Default to Chart.js
-  }
-};
-
-// Call initializeActiveIndex on component mount
-onMounted(() => {
-  initializeActiveIndex();
-});
+// The initializeActiveIndex function is redundant because the watcher runs immediately
+// const initializeActiveIndex = () => { ... };
+// onMounted(() => { initializeActiveIndex(); });
 
 </script>
+
 <style scoped>
-@import '../assets/css/ChartView.css';
+/* Remove the import - styles are now handled by parent or Vuetify */
+/* @import '../assets/css/ChartView.css'; */
+
+/* Add any essential scoped styles here if needed, e.g., min-height */
+.v-window {
+  min-height: 300px; /* Example: ensure window has some height */
+}
 </style>

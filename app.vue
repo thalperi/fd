@@ -1,40 +1,46 @@
 <template>
-  <v-app class="app">
-    <v-main class="main">
-      <v-container fluid class="container">
-        <div class="app-layout">
-          <div class="toolbar-grid">
-            <SymbolManager class="symbol-manager" />
-            <IntervalSelector class="interval-selector" />
-          </div>
-          <div class="content">
-            <div class="content-section">
-              <ChartView />
-            </div>
-            <div class="content-section-peer">
-              <OpenTradesTable />
-            </div>
-            <div class="content-section-peer">
-              <KlineTable />
-            </div>
-          </div>
-        </div>
+  <v-app>
+    <!-- Remove the 'dark' prop to let the app bar follow the global theme -->
+    <v-app-bar app color="primary"> 
+      <v-toolbar-title>Financial Dashboard</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <NuxtLink to="/" custom v-slot="{ navigate }">
+        <v-btn @click="navigate"> <!-- Use NuxtLink for navigation -->
+          Home
+        </v-btn>
+      </NuxtLink>
+      <NuxtLink to="/ThemeCustomization" custom v-slot="{ navigate }">
+        <v-btn @click="navigate"> <!-- Use NuxtLink for navigation -->
+          Theme Editor
+        </v-btn>
+      </NuxtLink>
+    </v-app-bar>
+
+    <v-main>
+      <v-container fluid>
+        <!-- NuxtPage will render the content of your pages -->
+        <NuxtPage />
       </v-container>
     </v-main>
   </v-app>
 </template>
 
 <script setup lang="ts">
-import SymbolManager from '~/components/SymbolManager.vue'
-import IntervalSelector from '~/components/IntervalSelector.vue'
-import DataSourcesView from '~/components/DataSourcesView.vue'
-import ChartView from '~/components/ChartView.vue'
+// Imports for specific components like SymbolManager, ChartView, etc.,
+// should now be in the respective page components (e.g., pages/index.vue)
+// or a layout if they are part of a reusable layout structure.
+
+// Global setup like klineStore initialization can remain if truly global,
+// or be moved to a more appropriate plugin or composable if tied to specific functionalities.
 import { useKlineStore } from '~/stores/klineStore'
 import { onMounted } from 'vue'
 
 const klineStore = useKlineStore()
 
 onMounted(() => {
+  // This initialization might be better suited for the klineStore itself
+  // or a dedicated plugin if it needs to run on app startup.
+  // Restore the initialization call
   if (process.client) {
     klineStore.initializeStore()
   }
@@ -42,6 +48,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Scoped styles for app.vue can remain if they apply to v-app, v-main, etc. */
+/* The colorful background styles might conflict with themes, consider removing or adjusting them. */
+/* For example: */
+/*
 .app {
   background-color: #007bff;
 }
@@ -50,31 +60,8 @@ onMounted(() => {
   background-color: #28a745;
 }
 
-.main-peer {
-  background-color: #218838; /* Slightly darker green */
-}
-
 .container {
   background-color: #dc3545;
 }
-
-.container-peer {
-  background-color: #c82333; /* Slightly darker red */
-}
-
-.toolbar {
-  background-color: #ffc107;
-}
-
-.toolbar-peer {
-  background-color: #e0a800; /* Slightly darker yellow */
-}
-
-.content-section {
-  background-color: #e9ecef; /* Light gray for peer components */
-}
-
-.content-section-peer {
-  background-color: #dee2e6; /* Slightly darker gray */
-}
+*/
 </style>

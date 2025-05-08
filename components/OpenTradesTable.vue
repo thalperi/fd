@@ -1,39 +1,54 @@
 <template>
-  <div class="trades-table-container">
-    <h3>Open Trades ({{ symbol }})</h3>
-    <div v-if="isLoading" class="loading">Loading trades...</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else-if="trades.length === 0" class="no-data">No open trades.</div>
-    <div v-else class="table-wrapper">
-      <v-table>
-        <thead>
-          <tr>
-            <th class="text-left">Order ID</th>
-            <th class="text-left">Symbol</th>
-            <th class="text-left">Side</th>
-            <th class="text-left">Price</th>
-            <th class="text-left">Amount</th>
-            <th class="text-left">Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="trade in trades"
-            :key="trade.orderId"
-            @click="selectTrade(trade)"
-            :class="{ selected: selectedOrderId === trade.orderId, buy: trade.side === 'BUY', sell: trade.side === 'SELL' }"
-            style="cursor: pointer;"
-          >
-            <td>{{ trade.orderId }}</td>
-            <td>{{ trade.symbol }}</td>
-            <td>{{ trade.side }}</td>
-            <td>{{ trade.price }}</td>
-            <td>{{ trade.origQty }}</td>
-            <td>{{ formatTimestamp(trade.time) }}</td>
-          </tr>
-        </tbody>
-      </v-table>
+  <!-- Container styling handled by parent div in index.vue -->
+  <div> 
+    <div class="text-h6 mb-2">Open Trades ({{ symbol }})</div> <!-- Use typography class -->
+
+    <div v-if="isLoading" class="text-center pa-4">
+      <v-progress-circular indeterminate color="primary"></v-progress-circular>
+      <p>Loading trades...</p>
     </div>
+
+    <v-alert v-else-if="error" type="error" density="compact" class="mb-4">
+      {{ error }}
+    </v-alert>
+
+    <div v-else-if="trades.length === 0" class="text-center text-medium-emphasis pa-4">
+      No open trades.
+    </div>
+
+    <v-table v-else density="compact" hover> <!-- Use v-table props -->
+      <thead>
+        <tr>
+          <th class="text-left">Order ID</th>
+          <th class="text-left">Symbol</th>
+          <th class="text-left">Side</th>
+          <th class="text-left">Price</th>
+          <th class="text-left">Amount</th>
+          <th class="text-left">Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="trade in trades"
+          :key="trade.orderId"
+          @click="selectTrade(trade)"
+          :class="{ selected: selectedOrderId === trade.orderId }" 
+          style="cursor: pointer;"
+        >
+          <td>{{ trade.orderId }}</td>
+          <td>{{ trade.symbol }}</td>
+          <td>
+            <!-- Use chips for side indication -->
+            <v-chip :color="trade.side === 'BUY' ? 'success' : 'error'" size="small" variant="tonal">
+              {{ trade.side }}
+            </v-chip>
+          </td>
+          <td>{{ trade.price }}</td>
+          <td>{{ trade.origQty }}</td>
+          <td>{{ formatTimestamp(trade.time) }}</td>
+        </tr>
+      </tbody>
+    </v-table>
   </div>
 </template>
 
@@ -64,7 +79,11 @@ const selectTrade = (trade: OpenOrder) => {
 const formatTimestamp = (timestamp: number): string => {
   if (!timestamp) return '';
   try {
-      return new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(timestamp));
+      // Use a more common format that includes seconds
+      return new Intl.DateTimeFormat(undefined, { 
+          year: 'numeric', month: 'numeric', day: 'numeric', 
+          hour: 'numeric', minute: 'numeric', second: 'numeric' 
+      }).format(new Date(timestamp));
   } catch (e) {
       return new Date(timestamp).toLocaleString();
   }
@@ -72,5 +91,16 @@ const formatTimestamp = (timestamp: number): string => {
 </script>
 
 <style scoped>
-@import '../assets/css/OpenTradesTable.css';
+/* Remove the import */
+/* @import '../assets/css/OpenTradesTable.css'; */
+
+/* Style for selected row using theme variable */
+.v-table tbody tr.selected {
+  background-color: rgba(var(--v-theme-primary), 0.1); /* Use primary color with alpha */
+}
+
+/* Ensure table respects container width */
+.v-table {
+  width: 100%;
+}
 </style>

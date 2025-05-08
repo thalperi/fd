@@ -1,42 +1,69 @@
 <template>
-  <div class="symbol-manager">
-    <label for="symbol-input">Symbol:</label>
-    <input
-      id="symbol-input"
-      type="text"
-      v-model="currentSymbolInput"
-      @input="handleInput"
-      @keyup.enter="confirmSymbol"
-      placeholder="e.g., PEPEUSDC"
-    />
-    <input
-      id="favorite-checkbox"
-      type="checkbox"
-      :checked="isCurrentSymbolFavorite"
-      @change="toggleFavorite"
-      :disabled="!currentSymbolInput"
-      title="Favorite this symbol"
-    />
-    <label for="favorite-checkbox" class="favorite-label">⭐</label>
+  <v-sheet rounded border elevation="1" class="pa-3">
+    <v-row dense align="center">
+      <v-col cols="12" sm="auto" class="flex-grow-1">
+        <v-text-field
+          v-model="currentSymbolInput"
+          label="Symbol"
+          placeholder="e.g., PEPEUSDC"
+          variant="outlined"
+          density="compact"
+          hide-details
+          @update:model-value="handleInput"
+          @keydown.enter="confirmSymbol"
+          class="mr-2"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="auto">
+         <v-checkbox-btn
+            :model-value="isCurrentSymbolFavorite"
+            @update:model-value="toggleFavorite"
+            :disabled="!currentSymbolInput"
+            icon="mdi-star"
+            false-icon="mdi-star-outline"
+            color="warning"
+            density="compact"
+            title="Favorite this symbol"
+          ></v-checkbox-btn>
+      </v-col>
+    </v-row>
 
-    <label for="favorite-select">Favorites:</label>
-    <select id="favorite-select" v-model="selectedFavorite" @change="selectFavorite">
-      <option disabled value="">-- Select Favorite --</option>
-      <!-- Use favoritesList from the store -->
-      <option v-for="fav in favoritesList" :key="fav" :value="fav">
-        {{ fav }}
-      </option>
-    </select>
-    <button @click="confirmSymbol" :disabled="!currentSymbolInput">Load Data</button>
-  </div>
+    <v-row dense align="center" class="mt-2">
+       <v-col cols="12" sm="auto" class="flex-grow-1">
+         <v-select
+           v-model="selectedFavorite"
+           :items="favoritesList"
+           label="Favorites"
+           placeholder="-- Select Favorite --"
+           variant="outlined"
+           density="compact"
+           hide-details
+           @update:model-value="selectFavorite"
+           class="mr-2"
+         ></v-select>
+       </v-col>
+       <v-col cols="auto">
+         <v-btn 
+           @click="confirmSymbol" 
+           :disabled="!currentSymbolInput"
+           :color="loadDataButtonBgColor || 'primary'" 
+           :style="{ color: loadDataButtonTextColor }" 
+           >
+           Load Data
+         </v-btn>
+       </v-col>
+    </v-row>
+  </v-sheet>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue';
-import { storeToRefs } from 'pinia'; // Import storeToRefs for reactive state access
+import { ref, watch, computed } from 'vue';
+import { storeToRefs } from 'pinia'; 
 import { useKlineStore } from '~/stores/klineStore';
+import { useThemeStore, LOAD_DATA_BTN_KEY } from '~/stores/themeStore'; // Import theme store and key
 
 const klineStore = useKlineStore();
+const themeStore = useThemeStore();
 
 // Use storeToRefs to keep reactivity for state properties
 const { selectedSymbol, favoritesList } = storeToRefs(klineStore);
@@ -47,31 +74,41 @@ const selectedFavorite = ref(''); // Model for the dropdown selection
 
 // Update local input when the store's selectedSymbol changes
 watch(selectedSymbol, (newSymbol) => {
-  currentSymbolInput.value = newSymbol;
-  // Clear dropdown selection if symbol changes externally
+  currentSymbolInput.value = newSymbol || ''; // Ensure it's a string
   if (selectedFavorite.value !== newSymbol) {
       selectedFavorite.value = '';
   }
-}, { immediate: true }); // Run immediately to set initial value
+}, { immediate: true }); 
 
 // Computed property to check if the *current input* is a favorite
 const isCurrentSymbolFavorite = computed(() => {
-  return favoritesList.value.includes(currentSymbolInput.value.toUpperCase());
+  const symbol = currentSymbolInput.value?.toUpperCase();
+  return !!symbol && favoritesList.value.includes(symbol);
 });
+
+// --- Button Theming ---
+const loadDataButtonOverrides = computed(() => {
+    return themeStore.activeThemeConfig?.componentOverrides?.[LOAD_DATA_BTN_KEY];
+});
+const loadDataButtonBgColor = computed(() => loadDataButtonOverrides.value?.backgroundColor);
+const loadDataButtonTextColor = computed(() => loadDataButtonOverrides.value?.color);
+// --- End Button Theming ---
 
 // Clear dropdown selection when user types in the input
 const handleInput = () => {
   selectedFavorite.value = '';
 };
 
-// Call store actions to manage favorites
-const toggleFavorite = async () => {
+// Call store actions to manage favorites based on the NEW state from the event
+const toggleFavorite = async (isNowFavorite: boolean | null) => { 
   const symbol = currentSymbolInput.value.toUpperCase();
   if (!symbol) return;
 
-  if (isCurrentSymbolFavorite.value) {
+  if (isNowFavorite === false) { 
+    console.log('Removing favorite:', symbol);
     await klineStore.removeFavorite(symbol);
-  } else {
+  } else if (isNowFavorite === true) { 
+    console.log('Adding favorite:', symbol);
     await klineStore.addFavorite(symbol);
   }
 };
@@ -79,8 +116,8 @@ const toggleFavorite = async () => {
 // Update input and trigger store action when selecting from dropdown
 const selectFavorite = () => {
   if (selectedFavorite.value) {
-    currentSymbolInput.value = selectedFavorite.value; // Update input field
-    klineStore.setSymbol(selectedFavorite.value); // Update store state (triggers fetch)
+    currentSymbolInput.value = selectedFavorite.value; 
+    klineStore.setSymbol(selectedFavorite.value); 
   }
 };
 
@@ -88,16 +125,14 @@ const selectFavorite = () => {
 const confirmSymbol = () => {
   const symbolToLoad = currentSymbolInput.value.toUpperCase();
   if (!symbolToLoad) return;
-  klineStore.setSymbol(symbolToLoad); // Update store state (triggers fetch)
+  klineStore.setSymbol(symbolToLoad); 
 };
 
-// Ensure the input reflects the initial store state on mount
-// (The immediate watcher handles this now)
-// onMounted(() => {
-//   currentSymbolInput.value = selectedSymbol.value;
-// });
-
 </script>
+
 <style scoped>
-@import '../assets/css/SymbolManager.css';
+/* Remove the import - styles are now handled by Vuetify */
+/* @import '../assets/css/SymbolManager.css'; */
+
+/* Add any minor scoped adjustments if needed, but prefer Vuetify props/utils */
 </style>
