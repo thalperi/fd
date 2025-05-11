@@ -1,34 +1,41 @@
 /* Import global styles */
-@import 'ChartJsCandlestick.css';
+/* @import 'ChartJsCandlestick.css'; */ /* Removed */
 @import 'EChartsCandlestick.css';
 
 /* Global Styles */
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial, sans-serif; /* Consider moving to Vuetify theme variables later */
   margin: 0;
   padding: 0;
-  background-color: #f4f4f9;
-  color: #333;
+  /* background-color: #f4f4f9; */ /* Controlled by Vuetify theme */
+  /* color: #333; */ /* Controlled by Vuetify theme (on-background, on-surface) */
 }
 
+/* Comment out global heading margins; rely on Vuetify typography components/classes */
+/*
 h1, h2, h3, h4, h5, h6 {
   margin: 0 0 10px;
-  color: #222;
-}
+  /* color: #222; */ /* Controlled by Vuetify theme */
+/* } */
 
+/* Comment out global paragraph margins; rely on Vuetify typography components/classes */
+/*
 p {
   margin: 0 0 15px;
-}
+  /* Color will be inherited or set by Vuetify theme */
+/* } */
 
 a {
-  color: #007bff;
+  /* color: #007bff; */ /* Controlled by Vuetify theme (e.g., primary color) */
   text-decoration: none;
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: underline; /* Standard hover, can be kept or themed later */
 }
 
+/* Remove global button styles, use v-btn */
+/*
 button {
   padding: 10px 20px;
   background-color: #007bff;
@@ -42,71 +49,23 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+*/
 
-.container {
+/* Comment out generic .container class to avoid conflicts with v-container */
+/*
+.container { 
   width: 100%;
   margin: 0;
   padding: 0;
 }
+*/
 
+/* Comment out utility classes for status text; use Vuetify components/text classes */
+/*
 .loading, .error, .no-data {
   text-align: center;
   font-size: 1.2em;
-  color: #777;
-}
+  /* color: #777; */ /* Let Vuetify components (v-alert, text-medium-emphasis) handle color */
+/* } */
 
-/* Toolbar Grid Layout */
-.toolbar-grid {
-  display: grid;
-  grid-template-columns: 1fr 6fr;
-  background-color: #ffc107;
-  width: 100%;
-}
-
-.symbol-manager {
-  grid-column: 1;
-}
-
-.interval-selector {
-  grid-column: 2;
-}
-
-/* App Container */
-.app-container {
-  width: 100%;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-/* App Layout */
-.app-layout {
-  width: 100%;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100%;
-}
-
-/* Content */
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-}
-
-/* Content Section */
-.content-section {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  height: 100%;
-  overflow-y: auto;
-}
+/* Obsolete Layout Styles are already commented out */

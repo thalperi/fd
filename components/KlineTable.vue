@@ -72,8 +72,7 @@ const {
 } = storeToRefs(klineStore);
 
 // State to control expansion panel (empty array means closed by default)
-// v-expansion-panels v-model uses index (0 for the first panel) or value if provided
-const panelState = ref<number[]>([]); // Use number array for index-based model
+const panelState = ref<number[]>([]); 
 
 // Computed property to display latest data first
 const reversedKlines = computed(() => {
@@ -89,7 +88,7 @@ const formatTimestamp = (timestamp: number): string => {
           hour: 'numeric', minute: 'numeric', second: 'numeric' 
       }).format(new Date(timestamp));
   } catch (e) {
-      console.warn("Error formatting date:", e);
+      // console.warn("Error formatting date:", e); // Removed console.warn
       return new Date(timestamp).toLocaleString(); // Fallback
   }
 };
@@ -98,18 +97,9 @@ const formatTimestamp = (timestamp: number): string => {
 const visibleKlines = computed(() => {
   return reversedKlines.value.slice(0, 20);
 });
-
-// Remove old toggle logic
-// const isTableVisible = ref(true); 
-// const toggleTable = () => {
-//   isTableVisible.value = !isTableVisible.value;
-// };
 </script>
 
 <style scoped>
-/* Remove the import */
-/* @import '../assets/css/KlineTable.css'; */
-
 /* Add any essential scoped styles here if needed */
 .v-table {
   width: 100%;
