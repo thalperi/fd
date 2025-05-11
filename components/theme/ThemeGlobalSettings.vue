@@ -43,47 +43,56 @@
             </v-list>
           </v-col>
 
-          <!-- Column 2: Color Picker & Text Field -->
-          <v-col cols="12" md="6" v-if="selectedColorDetails">
-            <div class="text-subtitle-1 mb-2">
-              Editing: {{ formatColorName(selectedColorKey) }} ({{ selectedColorType === 'vuetify' ? 'UI' : 'Chart' }})
-            </div>
-            <v-color-picker
-              :model-value="selectedColorDetails.value"
-              @update:model-value="(newColor) => updateSelectedColor(newColor)"
-              show-swatches
-              hide-inputs
-              mode="hex"
-              elevation="0"
-              width="100%"
-              class="mb-2"
-            ></v-color-picker>
-            <v-text-field
-              :model-value="selectedColorDetails.value"
-              @update:model-value="(newColor) => updateSelectedColor(newColor)"
-              density="compact"
-              outlined
-              hide-details
-            ></v-text-field>
-          </v-col>
-          
-          <!-- Column 3: Preview Swatch -->
-          <v-col cols="12" md="3" v-if="selectedColorDetails" class="d-flex flex-column align-center">
-             <div class="text-caption mb-1">Preview:</div>
-             <v-sheet 
-                :color="selectedColorDetails.value" 
-                height="60" 
-                width="100%" 
-                rounded 
-                class="elevation-1 d-flex align-center justify-center mb-1">
-                <span :style="{ color: getContrastForColor(selectedColorDetails.value) }">
-                  Aa
-                </span>
-             </v-sheet>
-             <code>
-                {{ selectedColorDetails.value }}
-             </code>
-          </v-col>
+          <!-- Column 2 & 3: Color Picker, Text Field, and Preview Swatch - Wrapped in ClientOnly -->
+          <ClientOnly>
+            <template v-if="selectedColorDetails">
+              <v-col cols="12" md="6">
+                <div class="text-subtitle-1 mb-2">
+                  Editing: {{ formatColorName(selectedColorKey) }} ({{ selectedColorType === 'vuetify' ? 'UI' : 'Chart' }})
+                </div>
+                <v-color-picker
+                  :model-value="selectedColorDetails.value"
+                  @update:model-value="(newColor) => updateSelectedColor(newColor)"
+                  show-swatches
+                  hide-inputs
+                  mode="hex"
+                  elevation="0"
+                  width="100%"
+                  class="mb-2"
+                ></v-color-picker>
+                <v-text-field
+                  :model-value="selectedColorDetails.value"
+                  @update:model-value="(newColor) => updateSelectedColor(newColor)"
+                  density="compact"
+                  outlined
+                  hide-details
+                ></v-text-field>
+              </v-col>
+              
+              <v-col cols="12" md="3" class="d-flex flex-column align-center">
+                 <div class="text-caption mb-1">Preview:</div>
+                 <v-sheet 
+                    :color="selectedColorDetails.value" 
+                    height="60" 
+                    width="100%" 
+                    rounded 
+                    class="elevation-1 d-flex align-center justify-center mb-1">
+                    <span :style="{ color: getContrastForColor(selectedColorDetails.value) }">
+                      Aa
+                    </span>
+                 </v-sheet>
+                 <code>
+                    {{ selectedColorDetails.value }}
+                 </code>
+              </v-col>
+            </template>
+            <template #fallback>
+              <!-- Optional: Placeholder for SSR -->
+              <v-col cols="12" md="9">
+                <p class="text-center pa-4 text-caption">Loading color editor...</p>
+              </v-col>
+            </template>
+          </ClientOnly>
         </v-row>
         <v-row v-if="activeThemeConfigObject">
              <v-col cols="12" class="mt-4">
@@ -125,8 +134,30 @@ const appliedVuetifyThemeIsDark = computed(() => {
   return vuetifyInstance?.theme?.global?.current?.value?.dark || false;
 });
 
-const editableThemeDarkProperty = ref(activeThemeConfigObject.value?.vuetifyTheme.dark || false);
 const panelModel = ref([0]); 
+
+// --- Direct Initialization during setup ---
+const initialActiveConfig = activeThemeConfigObject.value;
+const editableThemeDarkProperty = ref(initialActiveConfig?.vuetifyTheme.dark || false);
+
+let initialSelectedKey: string | null = null;
+let initialSelectedType: 'vuetify' | 'chart' | null = null;
+
+if (initialActiveConfig) {
+  const vKeys = initialActiveConfig.vuetifyTheme?.colors ? Object.keys(initialActiveConfig.vuetifyTheme.colors) : [];
+  const cKeys = initialActiveConfig.chartTheme ? Object.keys(initialActiveConfig.chartTheme) : [];
+  if (vKeys.length > 0) {
+    initialSelectedKey = vKeys[0];
+    initialSelectedType = 'vuetify';
+  } else if (cKeys.length > 0) {
+    initialSelectedKey = cKeys[0];
+    initialSelectedType = 'chart';
+  }
+}
+
+const selectedColorKey = ref<string | null>(initialSelectedKey);
+const selectedColorType = ref<'vuetify' | 'chart' | null>(initialSelectedType);
+// --- End Direct Initialization ---
 
 const vuetifyColorKeys = computed(() => {
   return activeThemeConfigObject.value?.vuetifyTheme?.colors ? Object.keys(activeThemeConfigObject.value.vuetifyTheme.colors) : [];
@@ -136,24 +167,31 @@ const chartColorKeys = computed(() => {
   return activeThemeConfigObject.value?.chartTheme ? Object.keys(activeThemeConfigObject.value.chartTheme) : [];
 });
 
-const selectedColorKey = ref<string | null>(null);
-const selectedColorType = ref<'vuetify' | 'chart' | null>(null);
-
-watch(activeThemeConfigObject, (newConfig) => {
+watch(activeThemeConfigObject, (newConfig, oldConfig) => {
+  // This watcher now only handles CHANGES after initial setup.
   if (newConfig) {
+    // Update editableThemeDarkProperty if it changed
+    const newDarkState = newConfig.vuetifyTheme?.dark || false;
+    if (editableThemeDarkProperty.value !== newDarkState) {
+      editableThemeDarkProperty.value = newDarkState;
+    }
+
+    // Update selectedColorKey and selectedColorType if current selection is invalid for newConfig,
+    // or if the theme name itself has changed.
     const vKeys = newConfig.vuetifyTheme?.colors ? Object.keys(newConfig.vuetifyTheme.colors) : [];
     const cKeys = newConfig.chartTheme ? Object.keys(newConfig.chartTheme) : [];
     
-    let currentKeyStillValid = false;
+    let currentSelectionStillValid = false;
     if (selectedColorKey.value && selectedColorType.value) {
-        if (selectedColorType.value === 'vuetify' && vKeys.includes(selectedColorKey.value)) {
-            currentKeyStillValid = true;
-        } else if (selectedColorType.value === 'chart' && cKeys.includes(selectedColorKey.value)) {
-            currentKeyStillValid = true;
-        }
+      if (selectedColorType.value === 'vuetify' && vKeys.includes(selectedColorKey.value)) {
+        currentSelectionStillValid = true;
+      } else if (selectedColorType.value === 'chart' && cKeys.includes(selectedColorKey.value)) {
+        currentSelectionStillValid = true;
+      }
     }
 
-    if (!currentKeyStillValid) { 
+    // If selection is no longer valid OR the theme itself changed name (not just content)
+    if (!currentSelectionStillValid || (oldConfig && newConfig.name !== oldConfig.name)) {
       if (vKeys.length > 0) {
         selectedColorKey.value = vKeys[0];
         selectedColorType.value = 'vuetify';
@@ -165,15 +203,12 @@ watch(activeThemeConfigObject, (newConfig) => {
         selectedColorType.value = null;
       }
     }
-  } else {
+  } else { // No newConfig, reset to defaults
+    editableThemeDarkProperty.value = false;
     selectedColorKey.value = null;
     selectedColorType.value = null;
   }
-
-  if (typeof newConfig?.vuetifyTheme?.dark === 'boolean') {
-     editableThemeDarkProperty.value = newConfig.vuetifyTheme.dark;
-  }
-}, { immediate: true, deep: true });
+}, { deep: true }); // NO immediate: true
 
 
 const selectedColorDetails = computed(() => {

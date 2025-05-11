@@ -19,13 +19,12 @@
          ></v-select>
          <v-checkbox
             v-if="activeThemeConfigObject"
-            :model-value="activeThemeConfigObject.isSystemProvided"
-            @update:model-value="handleToggleSystemProvided"
+            :model-value="activeThemeConfigObject.isBuiltIn"
+            @update:model-value="handleToggleBuiltIn"
             label="Built-in" 
             dense
             hide-details
-            class="mt-1 system-provided-checkbox"
-            :disabled="isOriginalSystemTheme" 
+            class="mt-1 built-in-checkbox"
           ></v-checkbox>
        </v-col>
        <v-col cols="12" md="8" class="d-flex align-center flex-wrap"> 
@@ -33,7 +32,7 @@
            :color="getButtonOverrideStyle(THEME_EDITOR_SAVE_BTN_KEY, 'backgroundColor') || 'primary'" 
            class="mr-2 mb-2 theme-editor-save-button" 
            @click="saveCurrentTheme"
-           :disabled="isSystemProvidedThemeSelected" 
+           :disabled="isBuiltInThemeSelected" 
            :style="saveBtnStyles"
           >Save Current Theme</v-btn> 
          <v-text-field
@@ -56,7 +55,7 @@
            :color="getButtonOverrideStyle(THEME_EDITOR_DELETE_BTN_KEY, 'backgroundColor') || 'error'" 
            class="mb-2 theme-editor-delete-button" 
            @click="deleteCurrentTheme" 
-           :disabled="isSystemProvidedThemeSelected" 
+           :disabled="isBuiltInThemeSelected" 
            :style="deleteBtnStyles"
           >Delete</v-btn> 
       </v-col>
@@ -129,11 +128,11 @@ const saveBtnStyles = computed(() => getDynamicButtonStyles(THEME_EDITOR_SAVE_BT
 const saveAsBtnStyles = computed(() => getDynamicButtonStyles(THEME_EDITOR_SAVE_AS_BTN_KEY));
 const deleteBtnStyles = computed(() => getDynamicButtonStyles(THEME_EDITOR_DELETE_BTN_KEY));
 
-const isSystemProvidedThemeSelected = computed(() => { 
-  return activeThemeConfigObject.value?.isSystemProvided === true;
+const isBuiltInThemeSelected = computed(() => { 
+  return activeThemeConfigObject.value?.isBuiltIn === true;
 });
 
-const isOriginalSystemTheme = computed(() => {
+const isOriginalBuiltInTheme = computed(() => {
     const name = activeThemeConfigObject.value?.name;
     return name === DEFAULT_LIGHT_THEME_NAME || 
            name === DEFAULT_DARK_THEME_NAME || 
@@ -149,27 +148,21 @@ const onThemeSelected = (themeName: string | null) => {
   if (themeName) themeStore.setActiveTheme(themeName); 
 };
 
-const handleToggleSystemProvided = (newVal: boolean | null) => {
+const handleToggleBuiltIn = (newVal: boolean | null) => {
   if (newVal === null || !activeThemeConfigObject.value) {
     return;
   }
-  // If it's an original system theme, prevent unchecking via this UI.
-  // The store action toggleThemeSystemProvidedStatus also has a safeguard.
-  if (isOriginalSystemTheme.value && activeThemeConfigObject.value.isSystemProvided && newVal === false) {
-      emit('show-snackbar', { text: `Original built-in themes cannot be unmarked as 'Built-in' directly. Use 'Save As' to create a user version.`, color: 'warning' });
-      // Revert checkbox state if v-model doesn't automatically handle it due to disabled logic or timing.
-      // This might require forcing a re-render or directly setting the checkbox's internal value if it gets out of sync.
-      // For now, we rely on the store state being the source of truth for the :model-value.
-      return; 
-  }
+  // The check for original built-in themes preventing unmarking has been removed 
+  // to allow full control as per user request.
+  // The store action toggleThemeBuiltInStatus might still have safeguards.
 
-  const result = themeStore.toggleThemeSystemProvidedStatus(activeThemeConfigObject.value.name);
+  const result = themeStore.toggleThemeBuiltInStatus(activeThemeConfigObject.value.name);
   emit('show-snackbar', { text: result.message || 'Status updated.', color: result.success ? 'success' : 'error' });
 };
 
 const saveCurrentTheme = () => {
   if (activeThemeConfigObject.value) {
-    if (isSystemProvidedThemeSelected.value) {
+    if (isBuiltInThemeSelected.value) {
         emit('show-snackbar', { text: `Built-in themes cannot be overwritten. Use 'Save As' to create a new version.`, color: 'warning' });
         return;
     }
@@ -194,8 +187,8 @@ const saveThemeAs = () => {
 
 const deleteCurrentTheme = () => {
   if (activeThemeConfigObject.value) {
-    if (isSystemProvidedThemeSelected.value) {
-        emit('show-snackbar', { text: `Built-in themes cannot be deleted. You can mark it as not 'Built-in' first if it's not an original system theme.`, color: 'warning' });
+    if (isBuiltInThemeSelected.value) {
+        emit('show-snackbar', { text: `Built-in themes cannot be deleted. You can mark it as not 'Built-in' first if it's not an original built-in theme.`, color: 'warning' });
         return;
     }
     const result = themeStore.deleteTheme(activeThemeConfigObject.value.name); 
@@ -208,7 +201,7 @@ const deleteCurrentTheme = () => {
 </script>
 
 <style scoped>
-.system-provided-checkbox {
+.built-in-checkbox {
   max-width: fit-content; 
 }
 .v-btn.theme-editor-save-button:hover {

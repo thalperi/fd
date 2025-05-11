@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { type ThemeDefinition } from 'vuetify';
+import { useCookie } from '#app'; // For Nuxt 3
 
 // --- Interfaces ---
 export interface AppTheme extends ThemeDefinition {
@@ -30,7 +31,7 @@ export interface ChartThemeColors {
 }
 export interface FullThemeConfiguration {
   name: string;
-  isSystemProvided?: boolean; 
+  isBuiltIn?: boolean; 
   vuetifyTheme: ThemeDefinition; 
   componentOverrides: ComponentOverrides; 
   componentBackgrounds: { [componentKey: string]: string }; 
@@ -79,18 +80,18 @@ const initialComponentOverrides: ComponentOverrides = {
   [THEME_EDITOR_SAVE_BTN_KEY]: {}, [THEME_EDITOR_SAVE_AS_BTN_KEY]: {}, [THEME_EDITOR_DELETE_BTN_KEY]: {},
 };
 
-// --- Initial System-Provided Theme Definitions (Defined directly in this file) ---
-const defaultLightConfigurationObject: FullThemeConfiguration = { // Renamed for clarity
+const defaultLightConfigurationObject: FullThemeConfiguration = { 
   name: DEFAULT_LIGHT_THEME_NAME,
-  isSystemProvided: true,
+  isBuiltIn: true,
   vuetifyTheme: { 
     dark: false, 
     colors: { 
-      primary: '#82B1FF', 'on-primary': '#FFFFFF', secondary: '#BDBDBD', 'on-secondary': '#000000',
+      primary: '#82B1FF', 'on-primary': '#000000', 
+      secondary: '#BDBDBD', 'on-secondary': '#000000',
       accent: '#1976D2', 'on-accent': '#FFFFFF', error: '#E53935', 'on-error': '#FFFFFF', 
       info: '#2196F3', 'on-info': '#FFFFFF', success: '#4CAF50', 'on-success': '#FFFFFF', 
       warning: '#FB8C00', 'on-warning': '#000000', background: '#FFFFFF', 'on-background': '#000000', 
-      surface: '#FFFFFF', 'on-surface': '#FFFFFF'
+      surface: '#FFFFFF', 'on-surface': '#000000'
     },
     variables: { 'hover-opacity': 0.04, 'focus-opacity': 0.08, 'activated-opacity': 0.08 }
   },
@@ -99,16 +100,20 @@ const defaultLightConfigurationObject: FullThemeConfiguration = { // Renamed for
   chartTheme: defaultChartColorsLight,
 };
 
-const defaultDarkConfigurationObject: FullThemeConfiguration = { // Renamed for clarity
+const defaultDarkConfigurationObject: FullThemeConfiguration = { 
   name: DEFAULT_DARK_THEME_NAME,
-  isSystemProvided: true,
+  isBuiltIn: true,
   vuetifyTheme: { 
     dark: true, 
     colors: { 
-      primary: '#2196F3', 'on-primary': '#FFFFFF', secondary: '#B0BEC5', 'on-secondary': '#000000', 
-      accent: '#FF4081', 'on-accent': '#FFFFFF', error: '#FF5252', 'on-error': '#FFFFFF', 
-      info: '#2196F3', 'on-info': '#FFFFFF', success: '#4CAF50', 'on-success': '#FFFFFF', 
-      warning: '#FB8C00', 'on-warning': '#FFFFFF', background: '#121212', 'on-background': '#FFFFFF', 
+      primary: '#2196F3', 'on-primary': '#FFFFFF', 
+      secondary: '#37474F', 'on-secondary': '#FFFFFF', 
+      accent: '#FF4081', 'on-accent': '#FFFFFF', 
+      error: '#FF5252', 'on-error': '#FFFFFF', 
+      info: '#2196F3', 'on-info': '#FFFFFF', 
+      success: '#4CAF50', 'on-success': '#FFFFFF', 
+      warning: '#FB8C00', 'on-warning': '#FFFFFF', 
+      background: '#121212', 'on-background': '#FFFFFF', 
       surface: '#1E1E1E', 'on-surface': '#FFFFFF' 
     },
     variables: { 'hover-opacity': 0.08, 'focus-opacity': 0.12, 'activated-opacity': 0.12 }
@@ -118,9 +123,9 @@ const defaultDarkConfigurationObject: FullThemeConfiguration = { // Renamed for 
   chartTheme: defaultChartColorsDark, 
 };
 
-const scrapedLegacyConfigurationObject: FullThemeConfiguration = { // Renamed for clarity
+const scrapedLegacyConfigurationObject: FullThemeConfiguration = { 
   name: SCRAPED_LEGACY_THEME_NAME,
-  isSystemProvided: true,
+  isBuiltIn: true,
   vuetifyTheme: { 
     dark: false, 
     colors: { 
@@ -141,16 +146,20 @@ const scrapedLegacyConfigurationObject: FullThemeConfiguration = { // Renamed fo
   chartTheme: defaultChartColorsLight, 
 };
 
-const xStyleDarkConfigurationObject: FullThemeConfiguration = { // Renamed for clarity
+const xStyleDarkConfigurationObject: FullThemeConfiguration = { 
   name: X_STYLE_DARK_THEME_NAME,
-  isSystemProvided: true,
+  isBuiltIn: true,
   vuetifyTheme: { 
     dark: true, 
     colors: { 
-      primary: '#1D9BF0', 'on-primary': '#FFFFFF', secondary: '#71767B', 'on-secondary': '#FFFFFF', 
-      accent: '#1D9BF0', 'on-accent': '#FFFFFF', error: '#F4212E', 'on-error': '#FFFFFF', 
-      info: '#1D9BF0', 'on-info': '#FFFFFF', success: '#00BA7C', 'on-success': '#FFFFFF', 
-      warning: '#FFAD1F', 'on-warning': '#000000', background: '#000000', 'on-background': '#E7E9EA', 
+      primary: '#1D9BF0', 'on-primary': '#FFFFFF', 
+      secondary: '#71767B', 'on-secondary': '#FFFFFF', 
+      accent: '#1D9BF0', 'on-accent': '#FFFFFF', 
+      error: '#F4212E', 'on-error': '#FFFFFF', 
+      info: '#1D9BF0', 'on-info': '#FFFFFF', 
+      success: '#00BA7C', 'on-success': '#FFFFFF', 
+      warning: '#FFAD1F', 'on-warning': '#FFFFFF', 
+      background: '#000000', 'on-background': '#E7E9EA', 
       surface: '#15202B', 'on-surface': '#E7E9EA' 
     }, 
   },
@@ -163,59 +172,54 @@ const xStyleDarkConfigurationObject: FullThemeConfiguration = { // Renamed for c
   componentBackgrounds: {}, 
 };
 
-const SYSTEM_PROVIDED_THEMES_DEFINITIONS: ReadonlyArray<FullThemeConfiguration> = [ 
+const BUILT_IN_THEMES_DEFINITIONS: ReadonlyArray<FullThemeConfiguration> = [ 
   defaultLightConfigurationObject, 
   defaultDarkConfigurationObject, 
   scrapedLegacyConfigurationObject, 
   xStyleDarkConfigurationObject 
 ];
 
-// --- Store Setup ---
-const THEME_STORE_STORAGE_KEY = 'themeStoreState';
+const THEME_STORE_STORAGE_KEY = 'themeStoreState'; // For localStorage (full theme objects)
+const ACTIVE_THEME_NAME_COOKIE_KEY = 'active-theme-name'; // For cookie (just the active theme name)
 
-const getSystemProvidedThemeByName = (name: string): FullThemeConfiguration | undefined => {
-    return SYSTEM_PROVIDED_THEMES_DEFINITIONS.find(t => t.name === name);
+const getBuiltInThemeByName = (name: string): FullThemeConfiguration | undefined => {
+    return BUILT_IN_THEMES_DEFINITIONS.find(t => t.name === name);
 };
 
-// Use the actual default objects for fallback in ensureFullThemeObject
 const baseLightForEnsure = defaultLightConfigurationObject; 
 const baseDarkForEnsure = defaultDarkConfigurationObject;
 
 const ensureFullThemeObject = (themePartial: Partial<FullThemeConfiguration>, baseName?: string): FullThemeConfiguration => {
   const name = themePartial.name || baseName || 'Unnamed Theme';
   const isDark = themePartial.vuetifyTheme?.dark || false;
-  
-  const baseSystemThemeForDefaults = getSystemProvidedThemeByName(name) || 
-                                   (isDark ? baseDarkForEnsure : baseLightForEnsure);
-
+  const baseBuiltInThemeForDefaults = getBuiltInThemeByName(name) || (isDark ? baseDarkForEnsure : baseLightForEnsure);
   return {
     name: name,
-    isSystemProvided: themePartial.isSystemProvided || SYSTEM_PROVIDED_THEMES_DEFINITIONS.some(spt => spt.name === name),
+    isBuiltIn: themePartial.isBuiltIn || BUILT_IN_THEMES_DEFINITIONS.some(spt => spt.name === name),
     vuetifyTheme: { 
         dark: isDark,
-        colors: { ...baseSystemThemeForDefaults.vuetifyTheme.colors, ...(themePartial.vuetifyTheme?.colors || {}) },
-        variables: { ...baseSystemThemeForDefaults.vuetifyTheme.variables, ...(themePartial.vuetifyTheme?.variables || {}) },
+        colors: { ...baseBuiltInThemeForDefaults.vuetifyTheme.colors, ...(themePartial.vuetifyTheme?.colors || {}) },
+        variables: { ...baseBuiltInThemeForDefaults.vuetifyTheme.variables, ...(themePartial.vuetifyTheme?.variables || {}) },
     },
-    componentOverrides: { ...initialComponentOverrides, ...baseSystemThemeForDefaults.componentOverrides, ...(themePartial.componentOverrides || {}) },
-    componentBackgrounds: { ...baseSystemThemeForDefaults.componentBackgrounds, ...(themePartial.componentBackgrounds || {}) }, 
-    chartTheme: { ...(isDark ? defaultChartColorsDark : defaultChartColorsLight), ...baseSystemThemeForDefaults.chartTheme, ...(themePartial.chartTheme || {}) },
+    componentOverrides: { ...initialComponentOverrides, ...baseBuiltInThemeForDefaults.componentOverrides, ...(themePartial.componentOverrides || {}) },
+    componentBackgrounds: { ...baseBuiltInThemeForDefaults.componentBackgrounds, ...(themePartial.componentBackgrounds || {}) }, 
+    chartTheme: { ...(isDark ? defaultChartColorsDark : defaultChartColorsLight), ...baseBuiltInThemeForDefaults.chartTheme, ...(themePartial.chartTheme || {}) },
   };
 };
 
 export const useThemeStore = defineStore('theme', {
   state: (): ThemeStoreState => ({
     activeThemeName: DEFAULT_LIGHT_THEME_NAME, 
-    themes: SYSTEM_PROVIDED_THEMES_DEFINITIONS.map(config => ensureFullThemeObject(config, config.name)),
+    themes: BUILT_IN_THEMES_DEFINITIONS.map(config => ensureFullThemeObject(config, config.name)),
     themeVersion: 0,
   }),
   getters: { 
     activeThemeConfig(state): FullThemeConfiguration | undefined {
-      const config = state.themes.find(t => t.name === state.activeThemeName);
-      return config;
+      return state.themes.find(t => t.name === state.activeThemeName);
     },
     currentVuetifyTheme(state): ThemeDefinition | undefined {
       const active = this.activeThemeConfig;
-      const fallbackTheme = getSystemProvidedThemeByName(DEFAULT_LIGHT_THEME_NAME) || SYSTEM_PROVIDED_THEMES_DEFINITIONS[0];
+      const fallbackTheme = getBuiltInThemeByName(DEFAULT_LIGHT_THEME_NAME) || BUILT_IN_THEMES_DEFINITIONS[0];
       return active ? active.vuetifyTheme : fallbackTheme.vuetifyTheme; 
     },
     availableThemeNames(state): string[] {
@@ -224,52 +228,76 @@ export const useThemeStore = defineStore('theme', {
   },
   actions: {
     loadThemesFromPersistence() { 
-      if (typeof window === 'undefined') return; 
-      try {
-        const storedStateString = localStorage.getItem(THEME_STORE_STORAGE_KEY);
-        const systemThemes = SYSTEM_PROVIDED_THEMES_DEFINITIONS.map(config => ensureFullThemeObject(config, config.name));
-        let themesFromStorage: FullThemeConfiguration[] = [];
-        let persistedActiveName: string | null = DEFAULT_LIGHT_THEME_NAME;
+      let persistedActiveNameByCookie: string | null = null;
+      const activeThemeNameCookie = useCookie<string | null>(ACTIVE_THEME_NAME_COOKIE_KEY);
+      if (activeThemeNameCookie.value) {
+        persistedActiveNameByCookie = activeThemeNameCookie.value;
+        // console.log(`[ThemeStore] Loaded activeThemeName from cookie: ${persistedActiveNameByCookie}`);
+      }
 
-        if (storedStateString) {
-          const storedState = JSON.parse(storedStateString) as { activeThemeName?: string, themes?: Partial<FullThemeConfiguration>[] };
-          persistedActiveName = storedState.activeThemeName || DEFAULT_LIGHT_THEME_NAME;
-          themesFromStorage = (storedState.themes || []).map(themePartial => ensureFullThemeObject(themePartial, themePartial.name));
-        }
-        
-        const mergedThemesMap = new Map<string, FullThemeConfiguration>();
-        systemThemes.forEach(theme => mergedThemesMap.set(theme.name, theme));
-        themesFromStorage.forEach(theme => mergedThemesMap.set(theme.name, theme)); 
+      let finalPersistedActiveName = persistedActiveNameByCookie; // Prioritize cookie
 
-        this.themes = Array.from(mergedThemesMap.values());
-        
-        if (this.themes.some(t => t.name === persistedActiveName)) {
-          this.activeThemeName = persistedActiveName;
-        } else {
-          this.activeThemeName = DEFAULT_LIGHT_THEME_NAME;
+      const builtInThemes = BUILT_IN_THEMES_DEFINITIONS.map(config => ensureFullThemeObject(config, config.name));
+      let themesFromStorage: FullThemeConfiguration[] = [];
+
+      if (typeof window !== 'undefined') { // localStorage is client-side only
+        try {
+          const storedStateString = localStorage.getItem(THEME_STORE_STORAGE_KEY);
+          if (storedStateString) {
+            const storedState = JSON.parse(storedStateString) as { activeThemeName?: string, themes?: Partial<FullThemeConfiguration>[] };
+            themesFromStorage = (storedState.themes || []).map(themePartial => ensureFullThemeObject(themePartial, themePartial.name));
+            
+            if (!finalPersistedActiveName && storedState.activeThemeName) { // If cookie didn't provide it, use localStorage's active name
+              finalPersistedActiveName = storedState.activeThemeName;
+              // console.log(`[ThemeStore] Loaded activeThemeName from localStorage (cookie fallback): ${finalPersistedActiveName}`);
+            }
+          }
+        } catch (error) {
+          console.error('[ThemeStore] Error reading from localStorage:', error);
         }
-      } catch (error) {
-        console.error('Error loading theme state from localStorage:', error);
-        this.themes = SYSTEM_PROVIDED_THEMES_DEFINITIONS.map(config => ensureFullThemeObject(config, config.name));
+      }
+      
+      finalPersistedActiveName = finalPersistedActiveName || DEFAULT_LIGHT_THEME_NAME; // Ultimate fallback
+
+      const mergedThemesMap = new Map<string, FullThemeConfiguration>();
+      builtInThemes.forEach(theme => mergedThemesMap.set(theme.name, theme));
+      themesFromStorage.forEach(theme => mergedThemesMap.set(theme.name, theme)); 
+
+      this.themes = Array.from(mergedThemesMap.values());
+      
+      if (this.themes.some(t => t.name === finalPersistedActiveName)) {
+        this.activeThemeName = finalPersistedActiveName;
+      } else {
         this.activeThemeName = DEFAULT_LIGHT_THEME_NAME;
       }
       this.themeVersion++;
     },
-    persistThemes() { 
+    persistActiveThemeNameToCookie() {
+      const activeThemeNameCookie = useCookie(ACTIVE_THEME_NAME_COOKIE_KEY, { 
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+        sameSite: 'lax',
+      });
+      if (activeThemeNameCookie.value !== this.activeThemeName) {
+        activeThemeNameCookie.value = this.activeThemeName;
+      }
+    },
+    persistFullThemesToLocalStorage() { 
       if (typeof window === 'undefined') return; 
       try {
-        const stateToPersist = { activeThemeName: this.activeThemeName, themes: this.themes };
+        const stateToPersist = { activeThemeName: this.activeThemeName, themes: this.themes }; // Still save activeThemeName here for non-SSR/client-only fallback
         localStorage.setItem(THEME_STORE_STORAGE_KEY, JSON.stringify(stateToPersist));
-      } catch (error) { console.error('Error persisting themes to localStorage:', error); }
+      } catch (error) { console.error('[ThemeStore] Error persisting themes to localStorage:', error); }
     },
     setActiveTheme(themeName: string) { 
       const themeExists = this.themes.some(t => t.name === themeName);
       if (themeExists) { 
         this.activeThemeName = themeName; 
-        this.persistThemes(); 
+        this.persistActiveThemeNameToCookie();
+        this.persistFullThemesToLocalStorage(); // Keep this for full theme data
         this.themeVersion++;
       } 
-      else { console.warn(`Theme "${themeName}" not found.`); }
+      else { console.warn(`[ThemeStore] Theme "${themeName}" not found during setActiveTheme.`); }
     },
     saveTheme(themeConfigInput: FullThemeConfiguration): { success: boolean; message?: string } { 
       const themeToSave = ensureFullThemeObject(themeConfigInput, themeConfigInput.name);
@@ -280,7 +308,8 @@ export const useThemeStore = defineStore('theme', {
         this.themes.push(themeToSave); 
       }
       this.activeThemeName = themeToSave.name; 
-      this.persistThemes(); 
+      this.persistActiveThemeNameToCookie();
+      this.persistFullThemesToLocalStorage();
       this.themeVersion++;
       return { success: true, message: `Theme "${themeToSave.name}" saved successfully!` };
     },
@@ -290,56 +319,58 @@ export const useThemeStore = defineStore('theme', {
       
       const newThemeObject = JSON.parse(JSON.stringify(themeConfigToCopy));
       newThemeObject.name = newName;
-      newThemeObject.isSystemProvided = false; 
-      
+      newThemeObject.isBuiltIn = false; 
       const fullyEnsuredNewTheme = ensureFullThemeObject(newThemeObject, newName);
-
       this.themes.push(fullyEnsuredNewTheme); 
       this.activeThemeName = newName; 
-      this.persistThemes(); 
+      this.persistActiveThemeNameToCookie();
+      this.persistFullThemesToLocalStorage();
       this.themeVersion++;
       return { success: true, message: `Theme saved as "${newName}"!` };
     },
     deleteTheme(themeName: string): {success: boolean, message?: string} { 
       const themeToDeleteIndex = this.themes.findIndex(t => t.name === themeName);
       if (themeToDeleteIndex > -1) {
-        const deletedThemeIsSystemProvided = this.themes[themeToDeleteIndex].isSystemProvided;
-        if (deletedThemeIsSystemProvided) {
-            const message = `System-provided theme "${themeName}" cannot be deleted. You can mark it as not system-provided first.`;
-            console.warn(message);
+        const deletedThemeIsBuiltIn = this.themes[themeToDeleteIndex].isBuiltIn;
+        if (deletedThemeIsBuiltIn) {
+            const message = `Built-in theme "${themeName}" cannot be deleted.`;
             return {success: false, message};
         }
         this.themes.splice(themeToDeleteIndex, 1); 
         if (this.activeThemeName === themeName) { 
           this.activeThemeName = DEFAULT_LIGHT_THEME_NAME; 
         } 
-        this.persistThemes(); 
+        this.persistActiveThemeNameToCookie();
+        this.persistFullThemesToLocalStorage();
         this.themeVersion++;
         return {success: true, message: `Theme "${themeName}" deleted.`};
       } 
       else { 
         const message = `Attempted to delete non-existent theme: "${themeName}"`;
-        console.warn(message); 
+        console.warn(`[ThemeStore] ${message}`); 
         return {success: false, message};
       }
     },
-    toggleThemeSystemProvidedStatus(themeName: string): {success: boolean, message?: string} {
+    toggleThemeBuiltInStatus(themeName: string): {success: boolean, message?: string} {
         const themeIndex = this.themes.findIndex(t => t.name === themeName);
         if (themeIndex === -1) {
             return {success: false, message: `Theme "${themeName}" not found.`};
         }
         const theme = this.themes[themeIndex];
-        const isOriginalSystemTheme = SYSTEM_PROVIDED_THEMES_DEFINITIONS.some(st => st.name === theme.name);
-        
-        if (isOriginalSystemTheme && theme.isSystemProvided && !theme.isSystemProvided === false) { 
-             return {success: false, message: `Cannot mark original system theme "${themeName}" as not system-provided.`};
-        }
-
-        theme.isSystemProvided = !theme.isSystemProvided;
+        // const isOriginalBuiltInTheme = BUILT_IN_THEMES_DEFINITIONS.some(st => st.name === theme.name); // Check removed
+        // if (isOriginalBuiltInTheme && theme.isBuiltIn && !theme.isBuiltIn === false) {  // Condition removed to allow toggling for all themes
+        //      const message = `Cannot mark original built-in theme "${themeName}" as not built-in.`;
+        //      return {success: false, message};
+        // }
+        theme.isBuiltIn = !theme.isBuiltIn;
         this.themes.splice(themeIndex, 1, theme); 
-        this.persistThemes();
+        this.persistActiveThemeNameToCookie(); // Persist change that might affect active theme indirectly if it was this one
+        this.persistFullThemesToLocalStorage();
         this.themeVersion++;
-        return {success: true, message: `Theme "${themeName}" 'isSystemProvided' status set to ${theme.isSystemProvided}.`};
+        const message = theme.isBuiltIn 
+            ? `Your "${themeName}" theme has been secured as a built-in theme.`
+            : `Your "${themeName}" theme is no longer secured as a built-in theme.`;
+        return {success: true, message: message};
     },
     updateActiveThemeConfiguration(
       newVuetifyTheme?: Partial<ThemeDefinition>, 
@@ -349,10 +380,8 @@ export const useThemeStore = defineStore('theme', {
     ) {
       const activeConfig = this.activeThemeConfig;
       if (!activeConfig) return;
-
       let targetConfig = JSON.parse(JSON.stringify(activeConfig)); 
       let changed = false;
-
       if (newVuetifyTheme) {
         const currentSimpleTheme = { dark: targetConfig.vuetifyTheme.dark, colors: targetConfig.vuetifyTheme.colors, variables: targetConfig.vuetifyTheme.variables };
         const newSimpleTheme = {
@@ -365,7 +394,6 @@ export const useThemeStore = defineStore('theme', {
           changed = true;
         }
       }
-
       if (newComponentOverrides) {
         targetConfig.componentOverrides = targetConfig.componentOverrides || {};
         for (const componentKey of Object.keys(newComponentOverrides)) {
@@ -377,17 +405,14 @@ export const useThemeStore = defineStore('theme', {
             }
             continue;
           }
-          
           targetConfig.componentOverrides[componentKey] = targetConfig.componentOverrides[componentKey] || {};
           const currentOverridesForComponent = targetConfig.componentOverrides[componentKey];
           let nestedChanged = false;
-
           for (const propKey in overrideUpdate) {
             if (Object.prototype.hasOwnProperty.call(overrideUpdate, propKey)) {
               const typedKey = propKey as keyof ComponentStyleOverride;
               if ((COMPONENT_STYLE_OVERRIDE_KEYS as ReadonlyArray<string>).includes(typedKey)) {
                 const valueToSet = overrideUpdate[typedKey];
-
                 if (valueToSet === undefined || valueToSet === null || (typeof valueToSet === 'string' && valueToSet.trim() === '')) {
                   if (currentOverridesForComponent[typedKey] !== undefined) {
                     delete currentOverridesForComponent[typedKey];
@@ -417,13 +442,10 @@ export const useThemeStore = defineStore('theme', {
               }
             }
           }
-          if (Object.keys(currentOverridesForComponent).length === 0) {
-            delete targetConfig.componentOverrides[componentKey];
-          }
+          if (Object.keys(currentOverridesForComponent).length === 0) { delete targetConfig.componentOverrides[componentKey]; }
           if (nestedChanged) changed = true;
         }
       }
-
       if (newComponentBackgrounds) {
         targetConfig.componentBackgrounds = targetConfig.componentBackgrounds || {};
         for (const key in newComponentBackgrounds) {
@@ -440,14 +462,12 @@ export const useThemeStore = defineStore('theme', {
           }
         }
       }
-
       if (newChartTheme) {
         targetConfig.chartTheme = targetConfig.chartTheme || (targetConfig.vuetifyTheme.dark ? defaultChartColorsDark : defaultChartColorsLight);
         let chartThemeChanged = false;
         for (const key of Object.keys(newChartTheme) as Array<keyof ChartThemeColors>) {
             const typedKey = key as keyof ChartThemeColors;
             const valueFromUpdate = newChartTheme[typedKey]; 
-            
             if (valueFromUpdate !== undefined) {
               if (typeof valueFromUpdate === 'string') { 
                 if (targetConfig.chartTheme[typedKey] !== valueFromUpdate) {
@@ -461,15 +481,15 @@ export const useThemeStore = defineStore('theme', {
         }
         if (chartThemeChanged) changed = true;
       }
-
       if (changed) {
         const activeConfigIndex = this.themes.findIndex(t => t.name === this.activeThemeName); 
         if (activeConfigIndex !== -1) { 
             this.themes.splice(activeConfigIndex, 1, targetConfig); 
         } else {
-            console.warn("[ThemeStore] updateActiveThemeConfiguration: Active theme not found in themes array during update. This may indicate an issue.");
+            console.warn("[ThemeStore] updateActiveThemeConfiguration: Active theme not found in themes array during update.");
         }
-        this.persistThemes(); 
+        this.persistActiveThemeNameToCookie();
+        this.persistFullThemesToLocalStorage();
         this.themeVersion++;
       }
     }
